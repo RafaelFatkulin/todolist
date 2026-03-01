@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mydb_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npx prisma generate
+      - run: npm run test
+      - run: npm run test:e2e
+    env:
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/mydb_test
+      REDIS_HOST: localhost
+      JWT_SECRET: test-secret
+      JWT_REFRESH_SECRET: test-refresh-secret

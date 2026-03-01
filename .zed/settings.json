@@ -1,0 +1,16 @@
+{
+  "prettier": {
+    "allowed": false,
+  },
+  "language_servers": [
+    "!prettier",
+    "..."
+  ],
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "configFile": "eslint.config.mjs",
+      },
+    },
+  },
+}
