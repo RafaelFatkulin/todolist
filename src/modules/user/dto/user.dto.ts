@@ -1,18 +1,17 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { roleEnum } from '../user.schema';
 
-const RoleSchema = z.enum(roleEnum.enumValues);
 
 export const CreateUserSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
+  name: z.string().min(2).max(100),
   password: z.string().min(8),
-  role: RoleSchema.default('USER').optional(),
 });
 
 export const UpdateUserSchema = z.object({
   password: z.string().min(8).optional(),
-  role: RoleSchema.optional(),
+  name: z.string().min(2).max(100).optional(),
+  refreshToken: z.string().nullable().optional(),
 });
 
 export const UserQuerySchema = z.object({

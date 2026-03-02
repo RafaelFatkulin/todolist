@@ -22,8 +22,8 @@ export class UserService {
     const passwordHash = await hash(dto.password, 12);
     const user = await this.userRepository.create({
       email: dto.email,
+      name: dto.name,
       passwordHash,
-      role: dto.role ?? 'USER',
     });
 
     this.logger.log(`User created: ${user.id}`);
@@ -55,10 +55,6 @@ export class UserService {
 
     if (dto.password) {
       data.password = await hash(dto.password, 12);
-    }
-
-    if (dto.role) {
-      data.role = dto.role;
     }
 
     const updated = await this.userRepository.update(id, data);

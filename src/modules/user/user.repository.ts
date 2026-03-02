@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { DatabaseService } from 'src/infrastructure/database/database.service';
 import { NewUser, User, users } from './user.schema';
-import { UpdateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserRepository {
@@ -34,7 +33,7 @@ export class UserRepository {
     return result[0];
   }
 
-  async update(id: string, data: UpdateUserDto): Promise<User | undefined> {
+  async update(id: string, data: Partial<Pick<NewUser, 'passwordHash' | 'refreshToken'>>): Promise<User | undefined> {
     const result = await this.db.db
       .update(users)
       .set(data)

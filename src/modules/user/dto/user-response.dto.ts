@@ -4,7 +4,7 @@ import { type User } from '../user.schema';
 export const UserResponseSchema = z.object({
   id: z.string(),
   email: z.string(),
-  role: z.string(),
+  name: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
