@@ -1,13 +1,13 @@
-import { ConflictException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
-import { UserRepository } from "../user/user.repository";
-import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
-import { LoginInput, RegisterInput, TokensDto } from "./auth.dto";
-import { hash } from "bcryptjs";
-import { User } from "../user/user.schema";
-import { JwtPayload } from "./strategies/jwt.strategy";
+import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { UserRepository } from '../user/user.repository';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { LoginInput, RegisterInput, TokensDto } from './auth.dto';
+import { hash } from 'bcryptjs';
+import { User } from '../user/user.schema';
+import { JwtPayload } from './strategies/jwt.strategy';
 import type { StringValue } from 'ms';
-import { compare } from "bcryptjs";
+import { compare } from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -23,15 +23,15 @@ export class AuthService {
     const existing = await this.userRepository.findByEmail(dto.email);
     if (existing) throw new ConflictException('Email already in use');
 
-    const passwordHash = await hash(dto.password, 12)
+    const passwordHash = await hash(dto.password, 12);
     const user = await this.userRepository.create({
       email: dto.email,
       passwordHash,
       name: dto.name,
-    })
+    });
 
     this.logger.log(`User ${user.id} registered`);
-    return this.issueTokens(user)
+    return this.issueTokens(user);
   }
 
   async login(dto: LoginInput): Promise<TokensDto> {

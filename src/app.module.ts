@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 
 @Module({
   imports: [
@@ -48,7 +49,8 @@ import { AuthModule } from './modules/auth/auth.module';
 
     DatabaseModule,
     UserModule,
-    AuthModule
+    AuthModule,
+    ProjectsModule,
   ],
   providers: [
     {

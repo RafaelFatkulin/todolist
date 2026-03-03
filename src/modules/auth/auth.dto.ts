@@ -1,11 +1,11 @@
-import { createZodDto } from "nestjs-zod";
-import z from "zod";
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
 export const RegisterSchema = z.object({
   email: z.email().max(255),
   name: z.string().min(2).max(100),
-  password: z.string().min(8).max(100)
-})
+  password: z.string().min(8).max(100),
+});
 
 export const LoginSchema = z.object({
   email: z.email().max(255),
@@ -20,7 +20,6 @@ export const TokensSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
 });
-
 
 export class RegisterDto extends createZodDto(RegisterSchema) { }
 export class LoginDto extends createZodDto(LoginSchema) { }

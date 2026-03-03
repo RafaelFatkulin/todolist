@@ -1,13 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, Request, Get } from '@nestjs/common'
-import { type User } from '../user/user.schema'
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { AuthService } from './auth.service'
-import { Public } from 'src/common/decorators/public.decorator'
-import { LoginDto, RefreshDto, RegisterDto, TokensDto } from './auth.dto'
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard'
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard'
-import { CurrentUser } from 'src/common/decorators/current-user.decorator'
-import { toUserResponse, UserResponseDto } from '../user/dto/user-response.dto'
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, Request, Get } from '@nestjs/common';
+import { type User } from '../user/user.schema';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthService } from './auth.service';
+import { Public } from 'src/common/decorators/public.decorator';
+import { LoginDto, RefreshDto, RegisterDto, TokensDto } from './auth.dto';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { toUserResponse, type UserResponseDto } from '../user/dto/user-response.dto';
 
 interface RequestWithUser extends Request {
   user: User & { refreshToken: string }
@@ -22,7 +22,7 @@ export class AuthController {
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   async register(@Body() dto: RegisterDto): Promise<TokensDto> {
-    return this.authService.register(dto)
+    return this.authService.register(dto);
   }
 
   @Public()
@@ -58,7 +58,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiOperation({ summary: 'Get current user' })
-  async me(@CurrentUser() user: User): Promise<UserResponseDto> {
+  me(@CurrentUser() user: User): UserResponseDto {
     return toUserResponse(user);
   }
 }

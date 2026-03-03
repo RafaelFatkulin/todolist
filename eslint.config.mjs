@@ -31,9 +31,7 @@ export default defineConfig(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'warn',
 
-      // Стиль — используем TS версию indent вместо базовой
-      'indent': 'off',
-      '@typescript-eslint/indent': ['error', 2],
+      // Стиль
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],

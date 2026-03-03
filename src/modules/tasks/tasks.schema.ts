@@ -1,7 +1,7 @@
-import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
-import { users } from "../user/user.schema";
-import { pgEnum } from "drizzle-orm/pg-core";
-import { projects } from "../projects/projects.schema";
+import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { users } from '../user/user.schema';
+import { pgEnum } from 'drizzle-orm/pg-core';
+import { projects } from '../projects/projects.schema';
 
 export const taskStatus = pgEnum('task_status', ['todo', 'in_progress', 'done']);
 export const taskPriority = pgEnum('task_priority', ['low', 'medium', 'high']);
