@@ -8,6 +8,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { MailModule } from './infrastructure/mail/mail.module';
 
 @Module({
   imports: [
@@ -41,11 +42,13 @@ import { ProjectsModule } from './modules/projects/projects.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         connection: {
-          host: config.get('REDIS_HOST', 'localhost'),
-          port: config.get('REDIS_PORT', 6379),
+          host: config.get<string>('REDIS_HOST', 'localhost'),
+          port: config.get<number>('REDIS_PORT', 6379),
+          password: config.get<string>('REDIS_PASSWORD'),
         },
       }),
     }),
+    MailModule,
 
     DatabaseModule,
     UserModule,

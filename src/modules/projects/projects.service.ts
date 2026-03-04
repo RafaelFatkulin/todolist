@@ -18,6 +18,8 @@ import {
   ProjectMemberResponseSchema,
 } from './dto/project-response.dto';
 import { UserRepository } from '../user/user.repository';
+import { MailService } from '../../infrastructure/mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ProjectsService {
@@ -26,6 +28,8 @@ export class ProjectsService {
   constructor(
     private readonly projectsRepository: ProjectsRepository,
     private readonly userRepository: UserRepository,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) { }
 
   async create(userId: string, dto: CreateProjectInput): Promise<ProjectResponseDto> {
@@ -88,10 +92,29 @@ export class ProjectsService {
     const existing = await this.projectsRepository.findMember(projectId, user.id);
     if (existing) throw new ConflictException('User is already a member');
 
+    const project = await this.projectsRepository.findById(projectId);
+    if (!project) throw new NotFoundException(`Project ${projectId} not found`);
+
+    const requester = await this.userRepository.findById(requesterId);
+    if (!requester) throw new NotFoundException('Requester not found');
+
     await this.projectsRepository.addMember(projectId, user.id, dto.role);
 
     const member = await this.projectsRepository.findMemberWithUser(projectId, user.id);
     if (!member) throw new NotFoundException('Member not found after creation');
+
+    this.mailService
+      .sendInvitation({
+        to: user.email,
+        invitedBy: requester.name ?? requester.email,
+        workspaceName: project.name,
+        inviteUrl: `${this.configService.get<string>('APP_URL')}/projects/${projectId}`,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.stack : String(err);
+        this.logger.error(`Failed to queue invitation email for ${user.email}`, message);
+      });
 
     return ProjectMemberResponseSchema.parse(member);
   }

@@ -2,6 +2,7 @@ import { ConflictException, Injectable, Logger, UnauthorizedException } from '@n
 import { UserRepository } from '../user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { MailService } from '../../infrastructure/mail/mail.service';
 import { LoginInput, RegisterInput, TokensDto } from './auth.dto';
 import { hash } from 'bcryptjs';
 import { User } from '../user/user.schema';
@@ -17,6 +18,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly mailService: MailService,
   ) { }
 
   async register(dto: RegisterInput): Promise<TokensDto> {
@@ -31,6 +33,17 @@ export class AuthService {
     });
 
     this.logger.log(`User ${user.id} registered`);
+
+    this.mailService
+      .sendWelcome({
+        to: user.email,
+        name: user.name ?? user.email,
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.stack : String(err);
+        this.logger.error(`Failed to queue welcome email for ${user.email}`, message);
+      });
+
     return this.issueTokens(user);
   }
 
