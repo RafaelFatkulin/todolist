@@ -2,6 +2,7 @@ export enum MailJobName {
   AUTH_CODE = 'auth.code',
   INVITATION = 'invitation',
   WELCOME = 'welcome',
+  VERIFY_EMAIL = 'verify.email'
 }
 
 export interface WelcomeJobPayload {
@@ -23,6 +24,12 @@ export interface InvitationJobPayload {
   expiresAt: Date
 }
 
-export type MailJobPayload = AuthCodeJobPayload | InvitationJobPayload | WelcomeJobPayload
+export interface VerifyEmailJobPayload {
+  to: string;
+  name: string;
+  verificationUrl: string;
+}
+
+export type MailJobPayload = AuthCodeJobPayload | InvitationJobPayload | WelcomeJobPayload | VerifyEmailJobPayload
 
 export const MAIL_QUEUE = 'mail';

@@ -25,6 +25,15 @@ export class UserRepository {
     return result[0];
   }
 
+  async findByVerificationToken(token: string): Promise<User | undefined> {
+    const result = await this.db.db
+      .select()
+      .from(users)
+      .where(eq(users.verificationToken, token))
+      .limit(1);
+    return result[0];
+  }
+
   async create(data: NewUser): Promise<User> {
     const result = await this.db.db
       .insert(users)
@@ -33,7 +42,14 @@ export class UserRepository {
     return result[0];
   }
 
-  async update(id: string, data: Partial<Pick<NewUser, 'passwordHash' | 'refreshToken'>>): Promise<User | undefined> {
+  async update(id: string, data: Partial<Pick<
+    NewUser,
+    'passwordHash'
+    | 'refreshToken'
+    | 'emailVerified'
+    | 'verificationToken'
+    | 'verificationTokenExpiresAt'
+  >>): Promise<User | undefined> {
     const result = await this.db.db
       .update(users)
       .set(data)

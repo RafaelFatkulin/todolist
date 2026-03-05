@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from '../user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -9,6 +9,7 @@ import { User } from '../user/user.schema';
 import { JwtPayload } from './strategies/jwt.strategy';
 import type { StringValue } from 'ms';
 import { compare } from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -26,18 +27,26 @@ export class AuthService {
     if (existing) throw new ConflictException('Email already in use');
 
     const passwordHash = await hash(dto.password, 12);
+    const verificationToken = randomBytes(32).toString('hex');
+    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     const user = await this.userRepository.create({
       email: dto.email,
       passwordHash,
       name: dto.name,
+      verificationToken,
+      verificationTokenExpiresAt,
     });
 
     this.logger.log(`User ${user.id} registered`);
 
+    const verificationUrl = `${this.config.getOrThrow<string>('APP_URL')}/auth/verify-email?token=${verificationToken}`;
+
     this.mailService
-      .sendWelcome({
+      .sendVerificationEmail({
         to: user.email,
         name: user.name ?? user.email,
+        verificationUrl,
       })
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.stack : String(err);
@@ -53,6 +62,10 @@ export class AuthService {
 
     const isPasswordValid = await compare(dto.password, user.passwordHash);
     if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+
+    if (!user.emailVerified) {
+      throw new UnauthorizedException('Please verify your email before logging in');
+    }
 
     return this.issueTokens(user);
   }
@@ -89,5 +102,26 @@ export class AuthService {
     await this.userRepository.update(user.id, { refreshToken: refreshTokenHash });
 
     return { accessToken, refreshToken };
+  }
+
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findByVerificationToken(token);
+
+    if (!user || !user.verificationTokenExpiresAt) {
+      throw new NotFoundException('Invalid verification token');
+    }
+
+    if (user.verificationTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Verification token expired');
+    }
+
+    await this.userRepository.update(user.id, {
+      emailVerified: new Date(),
+      verificationToken: null,
+      verificationTokenExpiresAt: null,
+    });
+
+    this.logger.log(`User ${user.id} verified email`);
+    return { message: 'Email verified successfully' };
   }
 }
