@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod';
 import { Project } from '../projects.schema';
 
 export const ProjectResponseSchema = z.object({

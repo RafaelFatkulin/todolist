@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 import { type User } from '../user.schema';
 
 export const UserResponseSchema = z.object({

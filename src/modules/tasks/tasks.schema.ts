@@ -22,3 +22,6 @@ export const tasks = pgTable('tasks', {
 
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
+
+export type TaskStatus = typeof taskStatus.enumValues[number];
+export type TaskPriority = typeof taskPriority.enumValues[number];

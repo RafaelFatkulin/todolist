@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, VerifyEmailJobPayload, WelcomeJobPayload } from './mail.types';
+import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, VerifyEmailJobPayload } from './mail.types';
 
 @Injectable()
 export class MailService {
@@ -14,13 +14,6 @@ export class MailService {
       priority: 1,
     });
     this.logger.log(`Verification email job queued for ${payload.to}`);
-  }
-
-  async sendWelcome(payload: WelcomeJobPayload): Promise<void> {
-    await this.mailQueue.add(MailJobName.WELCOME, payload, {
-      priority: 4,
-    });
-    this.logger.log(`Welcome job queued for ${payload.to}`);
   }
 
   async sendAuthCode(payload: AuthCodeJobPayload): Promise<void> {

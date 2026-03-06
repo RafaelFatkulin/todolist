@@ -9,6 +9,7 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { MailModule } from './infrastructure/mail/mail.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { MailModule } from './infrastructure/mail/mail.module';
     UserModule,
     AuthModule,
     ProjectsModule,
+    TasksModule,
   ],
   providers: [
     {

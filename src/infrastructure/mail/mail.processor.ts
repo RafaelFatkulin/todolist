@@ -2,7 +2,7 @@ import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, VerifyEmailJobPayload, WelcomeJobPayload } from './mail.types';
+import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, VerifyEmailJobPayload } from './mail.types';
 
 @Processor(MAIL_QUEUE, {
   concurrency: 5,
@@ -25,8 +25,6 @@ export class MailProcessor extends WorkerHost {
         return this.handleAuthCode(job as Job<AuthCodeJobPayload>);
       case MailJobName.INVITATION:
         return this.handleInvitation(job as Job<InvitationJobPayload>);
-      case MailJobName.WELCOME:
-        return this.handleWelcome(job as Job<WelcomeJobPayload>);
       default:
         this.logger.warn(`Unknown job name: ${job.name}`);
     }
@@ -39,16 +37,6 @@ export class MailProcessor extends WorkerHost {
       subject: 'Подтвердите email',
       template: 'verify-email',
       context: { name, verificationUrl },
-    });
-  }
-
-  private async handleWelcome(job: Job<WelcomeJobPayload>): Promise<void> {
-    const { to, name } = job.data;
-    await this.mailerService.sendMail({
-      to,
-      subject: 'Добро пожаловать!',
-      template: 'welcome',
-      context: { name },
     });
   }
 
