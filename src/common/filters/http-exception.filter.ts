@@ -31,21 +31,18 @@ function extractMessage(exception: unknown): { status: number; message: string }
     return { status: exception.getStatus(), message };
   }
 
-  const errorMessage =
-    isDrizzleError(exception)
-      ? (exception.cause?.message ?? exception.message)
-      : exception instanceof Error
-        ? exception.message
-        : String(exception);
+  const errorMessage = isDrizzleError(exception)
+    ? (exception.cause?.message ?? exception.message)
+    : exception instanceof Error
+      ? exception.message
+      : String(exception);
 
   if (errorMessage.includes('invalid input syntax for type uuid')) {
     return { status: HttpStatus.BAD_REQUEST, message: 'Invalid UUID format in request' };
   }
-
   if (errorMessage.includes('unique constraint')) {
     return { status: HttpStatus.CONFLICT, message: 'Resource already exists' };
   }
-
   if (errorMessage.includes('foreign key constraint')) {
     return { status: HttpStatus.UNPROCESSABLE_ENTITY, message: 'Referenced resource does not exist' };
   }

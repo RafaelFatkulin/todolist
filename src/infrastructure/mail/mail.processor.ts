@@ -62,7 +62,7 @@ export class MailProcessor extends WorkerHost {
         invitedBy,
         workspaceName,
         inviteUrl,
-        expiresAt: expiresAt.toLocaleDateString('ru-RU'),
+        expiresAt: new Date(expiresAt).toLocaleDateString('ru-RU'),
       },
     });
   }

@@ -2,9 +2,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-import { ZodValidationPipe } from 'nestjs-zod';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { NextFunction, Request, Response } from 'express';
 
@@ -44,9 +42,8 @@ async function bootstrap(): Promise<void> {
     origin: process.env.ALLOWED_ORIGINS?.split(',') ?? '*',
     credentials: true,
   });
-  app.useGlobalPipes(new ZodValidationPipe());
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // app.useGlobalFilters(new HttpExceptionFilter());
   app.setGlobalPrefix('api/v1');
 
   if (process.env.NODE_ENV !== 'production') {

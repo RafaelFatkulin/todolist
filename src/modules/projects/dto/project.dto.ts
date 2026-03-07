@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
-const ProjectMemberRoleSchema = z.enum(['member', 'owner', 'viewer']);
+export const ProjectMemberRoleSchema = z.enum(['member', 'owner', 'viewer']);
 
 export const CreateProjectSchema = z.object({
   name: z.string().min(1).max(100),

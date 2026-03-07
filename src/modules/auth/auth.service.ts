@@ -63,10 +63,6 @@ export class AuthService {
     const isPasswordValid = await compare(dto.password, user.passwordHash);
     if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
 
-    if (!user.emailVerified) {
-      throw new UnauthorizedException('Please verify your email before logging in');
-    }
-
     return this.issueTokens(user);
   }
 
@@ -90,7 +86,7 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.config.getOrThrow<string>('JWT_SECRET'),
-        expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '15m') as StringValue,
+        expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '7d') as StringValue,
       }),
       this.jwtService.signAsync(payload, {
         secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),

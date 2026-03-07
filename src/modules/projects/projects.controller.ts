@@ -15,7 +15,6 @@ import { ProjectsService } from './projects.service';
 import {
   CreateProjectDto,
   UpdateProjectDto,
-  AddMemberDto,
   UpdateMemberRoleDto,
 } from './dto/project.dto';
 import { type ProjectResponseDto, type ProjectMemberResponseDto } from './dto/project-response.dto';
@@ -72,16 +71,6 @@ export class ProjectsController {
     @CurrentUser() user: User,
   ): Promise<void> {
     return this.projectsService.remove(id, user.id);
-  }
-
-  @Post(':id/members')
-  @ApiOperation({ summary: 'Add member to project' })
-  async addMember(
-    @Param('id') id: string,
-    @CurrentUser() user: User,
-    @Body() dto: AddMemberDto,
-  ): Promise<ProjectMemberResponseDto> {
-    return this.projectsService.addMember(id, user.id, dto);
   }
 
   @Get(':id/members')

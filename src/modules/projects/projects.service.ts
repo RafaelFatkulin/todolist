@@ -2,14 +2,12 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  ConflictException,
   Logger,
 } from '@nestjs/common';
 import { ProjectsRepository } from './projects.repository';
 import {
   type CreateProjectInput,
   type UpdateProjectInput,
-  type AddMemberInput,
 } from './dto/project.dto';
 import {
   type ProjectResponseDto,
@@ -77,46 +75,6 @@ export class ProjectsService {
 
     await this.projectsRepository.delete(id);
     this.logger.log(`Project deleted: ${id}`);
-  }
-
-  async addMember(
-    projectId: string,
-    requesterId: string,
-    dto: AddMemberInput,
-  ): Promise<ProjectMemberResponseDto> {
-    await this.assertOwnerOrRole(projectId, requesterId, ['owner']);
-
-    const user = await this.userRepository.findByEmail(dto.email);
-    if (!user) throw new NotFoundException(`User with email ${dto.email} not found`);
-
-    const existing = await this.projectsRepository.findMember(projectId, user.id);
-    if (existing) throw new ConflictException('User is already a member');
-
-    const project = await this.projectsRepository.findById(projectId);
-    if (!project) throw new NotFoundException(`Project ${projectId} not found`);
-
-    const requester = await this.userRepository.findById(requesterId);
-    if (!requester) throw new NotFoundException('Requester not found');
-
-    await this.projectsRepository.addMember(projectId, user.id, dto.role);
-
-    const member = await this.projectsRepository.findMemberWithUser(projectId, user.id);
-    if (!member) throw new NotFoundException('Member not found after creation');
-
-    this.mailService
-      .sendInvitation({
-        to: user.email,
-        invitedBy: requester.name ?? requester.email,
-        workspaceName: project.name,
-        inviteUrl: `${this.configService.get<string>('APP_URL')}/projects/${projectId}`,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
-      })
-      .catch((err: unknown) => {
-        const message = err instanceof Error ? err.stack : String(err);
-        this.logger.error(`Failed to queue invitation email for ${user.email}`, message);
-      });
-
-    return ProjectMemberResponseSchema.parse(member);
   }
 
   async getMembers(projectId: string, userId: string): Promise<ProjectMemberResponseDto[]> {

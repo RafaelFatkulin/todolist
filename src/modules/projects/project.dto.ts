@@ -21,10 +21,8 @@ export const UpdateMemberRoleSchema = z.object({
 
 export class CreateProjectDto extends createZodDto(CreateProjectSchema) { }
 export class UpdateProjectDto extends createZodDto(UpdateProjectSchema) { }
-export class AddMemberDto extends createZodDto(AddMemberSchema) { }
 export class UpdateMemberRoleDto extends createZodDto(UpdateMemberRoleSchema) { }
 
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>
-export type AddMemberInput = z.infer<typeof AddMemberSchema>
 export type UpdateMemberRoleInput = z.infer<typeof UpdateMemberRoleSchema>

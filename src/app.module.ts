@@ -3,13 +3,17 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { MailModule } from './infrastructure/mail/mail.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { InvitationsModule } from './modules/invitations/invitations.module';
+import { ZodValidationPipe } from 'nestjs-zod';
+import { ZodExceptionFilter } from './common/filters/zod-exception.filter';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
@@ -56,11 +60,24 @@ import { TasksModule } from './modules/tasks/tasks.module';
     AuthModule,
     ProjectsModule,
     TasksModule,
+    InvitationsModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ZodExceptionFilter,
     },
   ],
 })

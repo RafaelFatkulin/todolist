@@ -10,7 +10,13 @@ export const CreateTaskSchema = z.object({
   status: TaskStatusEnum.default('todo'),
   priority: TaskPriorityEnum.default('low'),
   assigneeId: z.uuid().optional(),
-  dueDate: z.iso.datetime().optional(),
+  dueDate: z
+    .string()
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => v || null)
+    .refine((v) => !v || !isNaN(Date.parse(v)), { message: 'Invalid date format' }),
 });
 
 export const UpdateTaskSchema = CreateTaskSchema.partial();

@@ -46,18 +46,18 @@ export class ProjectsRepository {
   }
 
   async findByUser(userId: string): Promise<Project[]> {
-    const members = await this.db.db
-      .select({ projectId: projectMembers.projectId })
-      .from(projectMembers)
-      .where(eq(projectMembers.userId, userId));
-
-    const projectIds = members.map((m) => m.projectId);
-    if (projectIds.length === 0) return [];
-
     return this.db.db
-      .select()
-      .from(projects)
-      .where(eq(projects.ownerId, userId));
+      .select({
+        id: projects.id,
+        name: projects.name,
+        description: projects.description,
+        ownerId: projects.ownerId,
+        createdAt: projects.createdAt,
+        updatedAt: projects.updatedAt,
+      })
+      .from(projectMembers)
+      .innerJoin(projects, eq(projectMembers.projectId, projects.id))
+      .where(eq(projectMembers.userId, userId));
   }
 
   async update(id: string, data: UpdateProject): Promise<Project | undefined> {
