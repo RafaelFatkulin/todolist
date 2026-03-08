@@ -9,7 +9,7 @@ import { User } from '../user/user.schema';
 import { JwtPayload } from './strategies/jwt.strategy';
 import type { StringValue } from 'ms';
 import { compare } from 'bcryptjs';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -119,5 +119,61 @@ export class AuthService {
 
     this.logger.log(`User ${user.id} verified email`);
     return { message: 'Email verified successfully' };
+  }
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findByEmail(email);
+
+    if (!user) return { message: 'If this email exists, a reset link has been sent' };
+
+    const rawToken = randomBytes(32).toString('hex');
+    const hashedToken = createHash('sha256').update(rawToken).digest('hex');
+    const resetPasswordTokenExpiresAt = new Date(Date.now() + 3600 * 1000);
+
+    await this.userRepository.update(user.id, {
+      resetPasswordToken: hashedToken,
+      resetPasswordTokenExpiresAt,
+    });
+
+    const resetUrl = `${this.config.getOrThrow<string>('APP_URL')}/auth/reset-password?token=${rawToken}`;
+
+    this.mailService
+      .sendResetPassword({
+        to: user.email,
+        name: user.name ?? user.email,
+        resetUrl,
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.stack : String(err);
+        this.logger.error(`Failed to queue reset password email for ${user.email}`, message);
+      });
+
+    return { message: 'If this email exists, a reset link has been sent' };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const hashedToken = createHash('sha256').update(token).digest('hex');
+    const user = await this.userRepository.findByResetPasswordToken(hashedToken);
+
+    if (!user || !user.resetPasswordTokenExpiresAt) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    if (user.resetPasswordTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Reset token has expired');
+    }
+
+    const passwordHash = await hash(newPassword, 12);
+
+    await this.userRepository.update(user.id, {
+      passwordHash,
+      resetPasswordToken: null,
+      resetPasswordTokenExpiresAt: null,
+      refreshToken: null,
+      passwordChangedAt: new Date(),
+    });
+
+    this.logger.log(`User ${user.id} reset password`);
+    return { message: 'Password reset successfully' };
   }
 }

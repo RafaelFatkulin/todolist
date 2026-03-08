@@ -21,9 +21,20 @@ export const TokensSchema = z.object({
   refreshToken: z.string(),
 });
 
+export const ForgotPasswordSchema = z.object({
+  email: z.email(),
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8),
+});
+
 export class RegisterDto extends createZodDto(RegisterSchema) { }
 export class LoginDto extends createZodDto(LoginSchema) { }
 export class RefreshDto extends createZodDto(RefreshSchema) { }
+export class ForgotPasswordDto extends createZodDto(ForgotPasswordSchema) { }
+export class ResetPasswordDto extends createZodDto(ResetPasswordSchema) { }
 
 export type TokensDto = z.infer<typeof TokensSchema>;
 export type RegisterInput = z.infer<typeof RegisterSchema>;

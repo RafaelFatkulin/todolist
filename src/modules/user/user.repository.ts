@@ -34,6 +34,15 @@ export class UserRepository {
     return result[0];
   }
 
+  async findByResetPasswordToken(token: string): Promise<User | undefined> {
+    const result = await this.db.db
+      .select()
+      .from(users)
+      .where(eq(users.resetPasswordToken, token))
+      .limit(1);
+    return result[0];
+  }
+
   async create(data: NewUser): Promise<User> {
     const result = await this.db.db
       .insert(users)
@@ -49,6 +58,9 @@ export class UserRepository {
     | 'emailVerified'
     | 'verificationToken'
     | 'verificationTokenExpiresAt'
+    | 'resetPasswordToken'
+    | 'resetPasswordTokenExpiresAt'
+    | 'passwordChangedAt'
   >>): Promise<User | undefined> {
     const result = await this.db.db
       .update(users)

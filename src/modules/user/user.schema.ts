@@ -10,6 +10,9 @@ export const users = pgTable('users', {
   emailVerified: timestamp('email_verified'),
   verificationToken: varchar('verification_token', { length: 512 }),
   verificationTokenExpiresAt: timestamp('verification_token_expires_at'),
+  resetPasswordToken: varchar('reset_password_token', { length: 512 }),
+  resetPasswordTokenExpiresAt: timestamp('reset_password_token_expires_at'),
+  passwordChangedAt: timestamp('password_changed_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().$onUpdateFn(() => new Date()),
 });

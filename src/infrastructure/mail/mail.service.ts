@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, VerifyEmailJobPayload } from './mail.types';
+import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, ResetPasswordJobPayload, VerifyEmailJobPayload } from './mail.types';
 
 @Injectable()
 export class MailService {
@@ -14,6 +14,13 @@ export class MailService {
       priority: 1,
     });
     this.logger.log(`Verification email job queued for ${payload.to}`);
+  }
+
+  async sendResetPassword(payload: ResetPasswordJobPayload): Promise<void> {
+    await this.mailQueue.add(MailJobName.RESET_PASSWORD, payload, {
+      priority: 1,
+    });
+    this.logger.log(`Reset password job queued for ${payload.to}`);
   }
 
   async sendAuthCode(payload: AuthCodeJobPayload): Promise<void> {

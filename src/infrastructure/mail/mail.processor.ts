@@ -2,7 +2,7 @@ import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, VerifyEmailJobPayload } from './mail.types';
+import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, ResetPasswordJobPayload, VerifyEmailJobPayload } from './mail.types';
 
 @Processor(MAIL_QUEUE, {
   concurrency: 5,
@@ -21,6 +21,8 @@ export class MailProcessor extends WorkerHost {
     switch (jobName) {
       case MailJobName.VERIFY_EMAIL:
         return this.handleVerifyEmail(job as Job<VerifyEmailJobPayload>);
+      case MailJobName.RESET_PASSWORD:
+        return this.handleResetPassword(job as Job<ResetPasswordJobPayload>);
       case MailJobName.AUTH_CODE:
         return this.handleAuthCode(job as Job<AuthCodeJobPayload>);
       case MailJobName.INVITATION:
@@ -37,6 +39,16 @@ export class MailProcessor extends WorkerHost {
       subject: 'Подтвердите email',
       template: 'verify-email',
       context: { name, verificationUrl },
+    });
+  }
+
+  private async handleResetPassword(job: Job<ResetPasswordJobPayload>): Promise<void> {
+    const { to, name, resetUrl } = job.data;
+    await this.mailerService.sendMail({
+      to,
+      subject: 'Сброс пароля',
+      template: 'reset-password',
+      context: { name, resetUrl },
     });
   }
 

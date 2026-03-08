@@ -22,6 +22,20 @@
       "when": 1772907119203,
       "tag": "0002_simple_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772969055733,
+      "tag": "0003_ambiguous_mach_iv",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772974007383,
+      "tag": "0004_narrow_triathlon",
+      "breakpoints": true
     }
   ]
 }

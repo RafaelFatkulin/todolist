@@ -8,6 +8,7 @@ import { type User } from '../../user/user.schema';
 export interface JwtPayload {
   sub: string;
   email: string;
+  iat?: number;
 }
 
 @Injectable()
@@ -26,6 +27,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: JwtPayload): Promise<User> {
     const user = await this.userRepository.findById(payload.sub);
     if (!user) throw new UnauthorizedException();
+
+    if (user.passwordChangedAt) {
+      const tokenIssuedAt = new Date((payload.iat ?? 0) * 1000);
+      if (user.passwordChangedAt > tokenIssuedAt) {
+        throw new UnauthorizedException('Password changed, please login again');
+      }
+    }
 
     if (!user.emailVerified) {
       throw new UnauthorizedException('Please verify your email before continuing');
