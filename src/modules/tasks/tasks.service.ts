@@ -8,6 +8,9 @@ import { TasksRepository } from './tasks.repository';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { type CreateTaskInput, type UpdateTaskInput, type TaskQueryInput } from './dto/task.dto';
 import { type TaskResponseDto, toTaskResponse } from './dto/task-response.dto';
+import { UserRepository } from '../user/user.repository';
+import { ConfigService } from '@nestjs/config';
+import { MailService } from 'src/infrastructure/mail/mail.service';
 
 @Injectable()
 export class TasksService {
@@ -16,6 +19,9 @@ export class TasksService {
   constructor(
     private readonly tasksRepository: TasksRepository,
     private readonly projectsRepository: ProjectsRepository,
+    private readonly userRepository: UserRepository,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) { }
 
   async create(
@@ -36,7 +42,16 @@ export class TasksService {
       dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
     });
 
+    if (!task) {
+      throw new NotFoundException();
+    }
+
     this.logger.log(`Task ${task.id} created in project ${projectId}`);
+
+    if (dto.assigneeId && dto.assigneeId !== userId) {
+      await this.sendTaskAssignedEmail(dto.assigneeId, task.id, task.title, projectId);
+    }
+
     return toTaskResponse(task);
   }
 
@@ -58,7 +73,7 @@ export class TasksService {
   ): Promise<TaskResponseDto> {
     await this.assertMember(projectId, userId);
 
-    const task = await this.tasksRepository.findById(taskId);
+    const task = await this.tasksRepository.findByIdWithUsers(taskId);
     if (!task || task.projectId !== projectId) {
       throw new NotFoundException(`Task ${taskId} not found`);
     }
@@ -88,6 +103,11 @@ export class TasksService {
       dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
     });
     if (!updated) throw new NotFoundException(`Task ${taskId} not found`);
+
+    const assigneeChanged = dto.assigneeId && dto.assigneeId !== task.assigneeId;
+    if (assigneeChanged && dto.assigneeId !== userId) {
+      await this.sendTaskAssignedEmail(dto.assigneeId!, taskId, updated.title, projectId);
+    }
 
     return toTaskResponse(updated);
   }
@@ -126,5 +146,34 @@ export class TasksService {
     if (!member) {
       throw new ForbiddenException('Assignee is not a member of this project');
     }
+  }
+
+  private async sendTaskAssignedEmail(
+    assigneeId: string,
+    taskId: string,
+    taskTitle: string,
+    projectId: string,
+  ): Promise<void> {
+    const [assignee, project] = await Promise.all([
+      this.userRepository.findById(assigneeId),
+      this.projectsRepository.findById(projectId),
+    ]);
+
+    if (!assignee || !project) return;
+
+    const taskUrl = `${this.configService.get<string>('APP_URL')}/projects/${projectId}/tasks/${taskId}`;
+
+    this.mailService
+      .sendTaskAssigned({
+        to: assignee.email,
+        assigneeName: assignee.name ?? assignee.email,
+        taskTitle,
+        projectName: project.name,
+        taskUrl,
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.stack : String(err);
+        this.logger.error(`Failed to queue task assigned email for ${assignee.email}`, message);
+      });
   }
 }

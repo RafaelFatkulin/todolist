@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
-import { users } from '../user/user.schema';
+import { users, UserShort } from '../user/user.schema';
 import { pgEnum } from 'drizzle-orm/pg-core';
 import { projects } from '../projects/projects.schema';
 
@@ -25,3 +25,8 @@ export type NewTask = typeof tasks.$inferInsert;
 
 export type TaskStatus = typeof taskStatus.enumValues[number];
 export type TaskPriority = typeof taskPriority.enumValues[number];
+
+export type TaskWithUsers = Task & {
+  assignee: UserShort | null;
+  createdBy: UserShort;
+};

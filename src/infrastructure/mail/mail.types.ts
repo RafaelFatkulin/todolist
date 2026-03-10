@@ -3,6 +3,7 @@ export enum MailJobName {
   INVITATION = 'invitation',
   VERIFY_EMAIL = 'verify.email',
   RESET_PASSWORD = 'reset.password',
+  TASK_ASSIGNED = 'task.assigned',
 }
 
 export interface AuthCodeJobPayload {
@@ -31,6 +32,14 @@ export interface ResetPasswordJobPayload {
   resetUrl: string;
 }
 
-export type MailJobPayload = AuthCodeJobPayload | InvitationJobPayload | VerifyEmailJobPayload
+export interface TaskAssignedJobPayload {
+  to: string;
+  assigneeName: string;
+  taskTitle: string;
+  projectName: string;
+  taskUrl: string;
+}
+
+export type MailJobPayload = AuthCodeJobPayload | InvitationJobPayload | VerifyEmailJobPayload | TaskAssignedJobPayload
 
 export const MAIL_QUEUE = 'mail';

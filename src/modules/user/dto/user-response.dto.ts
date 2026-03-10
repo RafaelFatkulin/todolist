@@ -14,3 +14,9 @@ export type UserResponseDto = z.infer<typeof UserResponseSchema>;
 export function toUserResponse(user: User): UserResponseDto {
   return UserResponseSchema.parse(user);
 }
+
+export const UserShortSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+});

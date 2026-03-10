@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { type Task } from '../tasks.schema';
+import { TaskWithUsers } from '../tasks.schema';
+import { UserShortSchema } from 'src/modules/user/dto/user-response.dto';
 
 export const TaskResponseSchema = z.object({
   id: z.string(),
@@ -9,7 +10,9 @@ export const TaskResponseSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']),
   projectId: z.string(),
   assigneeId: z.string().nullable(),
+  assignee: UserShortSchema.nullable(),
   createdById: z.string(),
+  createdBy: UserShortSchema,
   dueDate: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
@@ -17,7 +20,7 @@ export const TaskResponseSchema = z.object({
 
 export type TaskResponseDto = z.infer<typeof TaskResponseSchema>;
 
-export function toTaskResponse(task: Task): TaskResponseDto {
+export function toTaskResponse(task: TaskWithUsers): TaskResponseDto {
   return TaskResponseSchema.parse({
     ...task,
     dueDate: task.dueDate?.toISOString() ?? null,

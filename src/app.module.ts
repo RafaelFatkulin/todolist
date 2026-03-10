@@ -14,6 +14,7 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { ZodExceptionFilter } from './common/filters/zod-exception.filter';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { CommentsModule } from './modules/comments/comments.module';
 
 @Module({
   imports: [
@@ -59,8 +60,9 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     UserModule,
     AuthModule,
     ProjectsModule,
-    TasksModule,
     InvitationsModule,
+    TasksModule,
+    CommentsModule,
   ],
   providers: [
     {

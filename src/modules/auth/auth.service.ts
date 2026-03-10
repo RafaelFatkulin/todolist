@@ -71,7 +71,13 @@ export class AuthService {
     if (!user || !user.refreshToken) throw new UnauthorizedException();
 
     const isValid = await compare(refreshToken, user.refreshToken);
-    if (!isValid) throw new UnauthorizedException();
+    if (!isValid) {
+      await this.userRepository.update(userId, { refreshToken: null });
+      this.logger.warn(`Refresh token reuse detected for user ${userId} — all sessions invalidated`);
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    await this.userRepository.update(userId, { refreshToken: null });
 
     return this.issueTokens(user);
   }

@@ -2,7 +2,7 @@ import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, ResetPasswordJobPayload, VerifyEmailJobPayload } from './mail.types';
+import { AuthCodeJobPayload, InvitationJobPayload, MAIL_QUEUE, MailJobName, ResetPasswordJobPayload, TaskAssignedJobPayload, VerifyEmailJobPayload } from './mail.types';
 
 @Processor(MAIL_QUEUE, {
   concurrency: 5,
@@ -27,6 +27,8 @@ export class MailProcessor extends WorkerHost {
         return this.handleAuthCode(job as Job<AuthCodeJobPayload>);
       case MailJobName.INVITATION:
         return this.handleInvitation(job as Job<InvitationJobPayload>);
+      case MailJobName.TASK_ASSIGNED:
+        return this.handleTaskAssigned(job as Job<TaskAssignedJobPayload>);
       default:
         this.logger.warn(`Unknown job name: ${job.name}`);
     }
@@ -76,6 +78,16 @@ export class MailProcessor extends WorkerHost {
         inviteUrl,
         expiresAt: new Date(expiresAt).toLocaleDateString('ru-RU'),
       },
+    });
+  }
+
+  private async handleTaskAssigned(job: Job<TaskAssignedJobPayload>): Promise<void> {
+    const { to, assigneeName, taskTitle, projectName, taskUrl } = job.data;
+    await this.mailerService.sendMail({
+      to,
+      subject: `Вам назначена задача: ${taskTitle}`,
+      template: 'task-assigned',
+      context: { assigneeName, taskTitle, projectName, taskUrl },
     });
   }
 
